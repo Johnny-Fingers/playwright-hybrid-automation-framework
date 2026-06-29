@@ -30,6 +30,8 @@ jobs:
       run: pnpm install --frozen-lockfile
 
     - name: Run Playwright tests
+      env:
+        HOME: /root
       run: pnpm playwright test
 
     - name: Upload Report Artifact
