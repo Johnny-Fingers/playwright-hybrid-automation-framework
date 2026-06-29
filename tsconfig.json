@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+      "target": "ES2022",
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "strict": true,                    /* Enable strict typing */
+      "noImplicitAny": true,             /* Avoid using "any" by mistake */
+      "strictNullChecks": true,          /* Protects against "undefined" errors */
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "outDir": "./dist"
+    },
+    "include": ["src/**/*", "tests/**/*"]
+  }
