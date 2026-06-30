@@ -11,7 +11,7 @@ export default defineConfig({
     ['list']                         /* Display a clean log in the terminal */
   ],
   use: {
-    baseURL: 'https://demo.realworld.show', /* Base URL for the public UI */
+    baseURL: 'https://api.realworld.show', /* Base URL for the public UI */
     trace: 'retain-on-failure',             /* Record detailed traces only if the test fails */
     screenshot: 'only-on-failure',          /* Take screenshots if the test fails */
     video: 'on-first-retry',                /* Record a video if the test goes into a retry loop */
