@@ -9,6 +9,7 @@ test.describe("API - Authentication Tests", () => {
     let dynamicEmail: string;
     let testPassword: string = "newPassword123!"
 
+    // Suite pre-condition: Existing user for loggin
     test.beforeAll(async ({ request }) => {
         const controller = new AuthController(request);
         const uniqueId = Date.now();
@@ -32,6 +33,7 @@ test.describe("API - Authentication Tests", () => {
     });
 
     test.beforeEach(({ request }) => {
+        // Initialize controller in each test
         authController = new AuthController(request);
     });
 

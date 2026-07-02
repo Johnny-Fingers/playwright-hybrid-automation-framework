@@ -10,7 +10,8 @@ test.describe("API - Comments Tests", () => {
     let articleController: ArticleController;
     let commentController: CommentController;
     let authToken: string;
-
+    
+    // Suite pre-condition: Existing user
     test.beforeAll(async ({ request }) => {
         authController = new AuthController(request);
         const uniqueId = Date.now();
@@ -28,17 +29,19 @@ test.describe("API - Comments Tests", () => {
         if (response.status() !== 201) {
             throw new Error("Pre-condition failed: Could not create a user.");
         };
-
+        // Save token for authentication
         const body = await response.json();
         authToken = body.user.token;
     });
 
+    // Initialize controllers in each test
     test.beforeEach(async ({ request }) => {
         articleController = new ArticleController(request);
         commentController = new CommentController(request);
     });
-
+    
     test("Should add a comment to an article successfully", async () => {
+        // Test pre-condition: Existing article
         const uniqueId = Date.now();
 
         const articlePayload = {
@@ -52,9 +55,11 @@ test.describe("API - Comments Tests", () => {
 
         const articleResponse = await articleController.create(articlePayload, authToken);
         expect(articleResponse.status()).toBe(201);
+        // Recover the slug to add a comment to this article
         const articleBody: ArticleResponse = await articleResponse.json();
         const targetSlug = articleBody.article.slug;
 
+        // Add comment
         const commentPayload = {
             comment: {
                 body: "This automated comment was added using Playwright."
