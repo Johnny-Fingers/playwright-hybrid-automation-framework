@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "test:docker": "docker run --rm -it -v $(pwd):/work/ -w /work/ mcr.microsoft.com/playwright:v1.61.1-noble sh -c 'corepack enable && pnpm playwright test \"$@\"' --"
+    "test:all": "playwright test",
+    "test:docker": "docker run --rm -it -v $(pwd):/app/ -w /app/ mcr.microsoft.com/playwright:v1.61.1-noble sh -c 'corepack enable && pnpm playwright test \"$@\"' --",
+    "test:docker:all": "docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/playwright:v1.61.1-noble sh -c 'corepack enable && pnpm test:all'"
   },
   "keywords": [],
   "author": "",
