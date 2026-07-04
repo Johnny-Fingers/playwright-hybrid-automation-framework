@@ -6,25 +6,34 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
-    timeout-minutes: 60
+  e2e-tests:
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     # Run the job directly within the official Playwright image
     container:
       image: mcr.microsoft.com/playwright:v1.61.1-noble
 
     steps:
+    - name: Checkout repository
     - uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
 
     - name: Install pnpm
       uses: pnpm/action-setup@v4
       with:
         version: 11.8.0
+    # Get the cache route inside the container  
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+    # Cache pnpm modules to speed up future pushes
+    - name: Cache pnpm module
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
 
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
@@ -32,12 +41,13 @@ jobs:
     - name: Run Playwright tests
       env:
         HOME: /root
-      run: pnpm playwright test
-
-    - name: Upload Report Artifact
+        CI: "true"
+      run: pnpm test:all
+    # Saving report is something fails
+    - name: Upload test report on failure
+      if: failure()
       uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
       with:
-        name: playwright-report
+        name: playwright-failure-report
         path: playwright-report/
-        retention-days: 30
+        retention-days: 7
