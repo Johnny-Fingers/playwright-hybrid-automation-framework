@@ -1,46 +1,13 @@
-import { test, expect } from "@playwright/test";
-import { AuthController } from "../../src/api/controllers/auth.controller.js";
+import { test, expect } from "../../fixtures/auth.fixture.js";
 import { ArticleController } from "../../src/api/controllers/article.controller.js";
 import { CommentController } from "../../src/api/controllers/comment.controller.js";
 import { ArticleResponse } from "../../src/api/models/article.model.js";
 import { CommentResponse } from "../../src/api/models/comment.model.js";
 
-test.describe("API - Comments Tests", () => {
-    let authController: AuthController;
-    let articleController: ArticleController;
-    let commentController: CommentController;
-    let authToken: string;
-    
-    // Suite pre-condition: Existing user
-    test.beforeAll(async ({ request }) => {
-        authController = new AuthController(request);
-        const uniqueId = Date.now();
-
-        const registerPayload = {
-            user: {
-                username: `user_${uniqueId}`,
-                email: `email_${uniqueId}@test.com`,
-                password: "newPassword123!"
-            }
-        };
-
-        const response = await authController.register(registerPayload);
-        
-        if (response.status() !== 201) {
-            throw new Error("Pre-condition failed: Could not create a user.");
-        };
-        // Save token for authentication
-        const body = await response.json();
-        authToken = body.user.token;
-    });
-
-    // Initialize controllers in each test
-    test.beforeEach(async ({ request }) => {
-        articleController = new ArticleController(request);
-        commentController = new CommentController(request);
-    });
-    
-    test("Should add a comment to an article successfully", async () => {
+test.describe("API - Comments Tests", () => {   
+    test("Should add a comment to an article successfully", async ({ authenticatedRequest }) => {
+        const articleController = new ArticleController(authenticatedRequest);
+        const commentController = new CommentController(authenticatedRequest);
         // Test pre-condition: Existing article
         const uniqueId = Date.now();
 
@@ -53,7 +20,7 @@ test.describe("API - Comments Tests", () => {
             }
         };
 
-        const articleResponse = await articleController.create(articlePayload, authToken);
+        const articleResponse = await articleController.create(articlePayload);
         expect(articleResponse.status()).toBe(201);
         // Recover the slug to add a comment to this article
         const articleBody: ArticleResponse = await articleResponse.json();
@@ -66,7 +33,7 @@ test.describe("API - Comments Tests", () => {
             }
         };
 
-        const response = await commentController.create(targetSlug, commentPayload, authToken);
+        const response = await commentController.create(targetSlug, commentPayload);
 
         expect(response.status()).toBe(201);
         const commentBody: CommentResponse = await response.json();

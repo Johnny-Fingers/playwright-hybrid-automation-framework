@@ -1,43 +1,10 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../fixtures/auth.fixture.js";
 import { AuthController } from "../../src/api/controllers/auth.controller.js";
 import { UserResponse, AuthErrorResponse } from "../../src/api/models/user.model.js";
 
 test.describe("API - Authentication Tests", () => {
-    let authController: AuthController;
-
-    let dynamicUsername: string;
-    let dynamicEmail: string;
-    let testPassword: string = "newPassword123!"
-
-    // Suite pre-condition: Existing user for loggin
-    test.beforeAll(async ({ request }) => {
-        const controller = new AuthController(request);
-        const uniqueId = Date.now();
-
-        dynamicUsername = `user_${uniqueId}`;
-        dynamicEmail = `email_${uniqueId}@test.com`;
-
-        const registerPayload = {
-            user: {
-                username: dynamicUsername,
-                email: dynamicEmail,
-                password: testPassword
-            }
-        };
-
-        const response = await controller.register(registerPayload);
-
-        if (response.status() !== 201) {
-            throw new Error(`Setup failed: Could not register user. Status: ${response.status()}`);
-        };
-    });
-
-    test.beforeEach(({ request }) => {
-        // Initialize controller in each test
-        authController = new AuthController(request);
-    });
-
-    test("Should register a new user successfully", async () => {
+    test("Should register a new user successfully", async ({ request }) => {
+        const authController = new AuthController(request);
         const uniqueId = Date.now();
         const registerPayload = {
             user: {
@@ -57,11 +24,12 @@ test.describe("API - Authentication Tests", () => {
         expect(body.user.token).toBeTruthy();
     });
 
-    test("Should login successfully with valid credentials", async () => {
+    test("Should login successfully with valid credentials", async ({ request, registeredUser }) => {
+        const authController = new AuthController(request);
         const loginPayload = {
             user: {
-                email: dynamicEmail,
-                password: testPassword
+                email: registeredUser.email,
+                password: registeredUser.password
             }
         };
 
@@ -75,10 +43,11 @@ test.describe("API - Authentication Tests", () => {
         expect(typeof body.user.token).toBe("string");
     });
 
-    test("Should fail login with incorrect password", async () => {
+    test("Should fail login with incorrect password", async ({ request, registeredUser }) => {
+        const authController = new AuthController(request);
         const invalidPayload = {
             user: {
-                email: dynamicEmail,
+                email: registeredUser.email,
                 password: "wrongPassword"
             }
         };
