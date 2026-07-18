@@ -64,7 +64,7 @@ jobs:
         cd app-repo
         npm run dev &
         echo "Waiting for the local servers start up..."
-        npx wait-on http://localhost:3001 http://localhost:5173 --timeout 60000
+        npx wait-on tcp:3000 tcp:5173 --timeout 60000
 
     # Run tests
     - name: Run Playwright tests
