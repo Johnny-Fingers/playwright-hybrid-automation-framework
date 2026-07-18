@@ -14,9 +14,10 @@ type MyFixtures = {
 };
 
 export const test = base.extend<MyFixtures>({
+    // Set an authenticated page for UI tests
     authenticatedPage: async ({ page, context }, use) => {
         const apiContext = await playwrightRequest.newContext({
-            baseURL: "https://api.realworld.show"
+            baseURL: "http://localhost:3001"
         });
         const authController = new AuthController(apiContext);
         const uniqueId = Date.now();
@@ -39,15 +40,16 @@ export const test = base.extend<MyFixtures>({
         await apiContext.dispose();
 
         await context.addInitScript((jwt) => {
-            window.localStorage.setItem("jwtToken", jwt)
+            window.localStorage.setItem("token", jwt)
         }, token);
 
         await use(page);
     },
 
+    // Set the context for API testing
     authenticatedRequest: async ({}, use) => {
         const apiContext = await playwrightRequest.newContext({
-            baseURL: "https://api.realworld.show"
+            baseURL: "http://localhost:3001"
         });
         const authController = new AuthController(apiContext);
         const uniqueId = Date.now();
@@ -68,7 +70,7 @@ export const test = base.extend<MyFixtures>({
         const token = body.user.token;
 
         const authorizedContext = await playwrightRequest.newContext({
-            baseURL: "https://api.realworld.show",
+            baseURL: "http://localhost:3001",
             extraHTTPHeaders: {
                 "Authorization": `Token ${token}`,
                 "Content-Type": "application/json"
@@ -80,9 +82,10 @@ export const test = base.extend<MyFixtures>({
         await authorizedContext.dispose();
     },
 
+    // Resgister a user without save its authentication token
     registeredUser: async ({}, use) => {
         const apiContext = await playwrightRequest.newContext({
-            baseURL: "https://api.realworld.show"
+            baseURL: "http://localhost:3001"
         });
         const authController = new AuthController(apiContext);
 

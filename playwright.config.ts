@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const uiCommonOptions = {
-  baseURL: "https://demo.realworld.show" /* Base URL for the public UI */
+  baseURL: "http://localhost:5173" /* Base URL for the local UI */
 }
 
 export default defineConfig({
@@ -25,7 +25,7 @@ export default defineConfig({
       name: "api-tests",
       testDir: "./tests/api",
       use: {
-        baseURL: "https://api.realworld.show" /* Base URL for the public API */
+        baseURL: "http://localhost:3001" /* Base URL for the local API */
       }
     },
     // Running tests on Desktop Chrome

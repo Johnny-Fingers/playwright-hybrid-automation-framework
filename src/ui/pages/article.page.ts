@@ -19,7 +19,7 @@ export class ArticlePage {
         this.tagsInput = page.getByPlaceholder("Enter tags");
         this.publishButton = page.getByRole("button", { name: "Publish Article" });
         this.articleTitleHeader = page.locator(".article-page h1");
-        this.articleBodyContent = page.locator(".article-content p");
+        this.articleBodyContent = page.locator(".article-content > div > div");
     }
 
     // Navigate to editor article page
