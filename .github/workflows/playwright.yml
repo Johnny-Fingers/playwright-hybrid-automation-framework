@@ -14,18 +14,29 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.61.1-noble
 
     steps:
+    # Clone current repositories with playwright tests
     - name: Checkout repository
       uses: actions/checkout@v4
+    
+    # Clone repository with software under testing
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        repository: "Johnny-Fingers/node-react-real-world-example-app"
+        path: app-repo
 
+    # Configure pnpm
     - name: Install pnpm
       uses: pnpm/action-setup@v4
       with:
         version: 11.8.0
+    
     # Get the cache route inside the container  
     - name: Get pnpm store directory
       shell: bash
       run: |
         echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+    
     # Cache pnpm modules to speed up future pushes
     - name: Cache pnpm module
       uses: actions/cache@v4
@@ -34,15 +45,34 @@ jobs:
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
-
-    - name: Install dependencies
+    
+    # Install testing dependencies
+    - name: Install testing dependencies
       run: pnpm install --frozen-lockfile
 
+    #Install application dependencies
+    - name: Install application dependencies
+      run: |
+        cd app-repo
+        npm ci
+    
+    # Run app with npm
+    - name: Start Application Servers
+      env:
+        PORT: 3001
+      run: |
+        cd app-repo
+        npm run dev &
+        echo "Waiting for the local servers start up..."
+        npx wait-on http://localhost:3001 http://localhost:5173 --timeout 60000
+
+    # Run tests
     - name: Run Playwright tests
       env:
         HOME: /root
         CI: "true"
       run: pnpm test:all
+    
     # Saving report is something fails
     - name: Upload test report on failure
       if: failure()
