@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-supported-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 
-A production-oriented test automation framework built with [Playwright](https://playwright.dev/) and TypeScript. It demonstrates hybrid API and UI testing against the public [Conduit](https://demo.realworld.show/) application (RealWorld spec), with a focus on maintainable architecture, reliable test setup, and environment-independent execution.
+A production-oriented test automation framework built with [Playwright](https://playwright.dev/) and TypeScript. It demonstrates hybrid API and UI testing against a local [RealWorld](https://github.com/gothinkster/realworld) application, with a focus on maintainable architecture, reliable test setup, and environment-independent execution.
 
 This repository showcases how design patterns, custom fixtures, and containerization come together to produce stable and readable automation.
 
@@ -15,14 +15,16 @@ This repository showcases how design patterns, custom fixtures, and containeriza
 
 ## Application Under Test
 
-The framework targets the official **Conduit** demo hosted at:
+The framework targets a local **RealWorld** application running at:
 
 | Layer | URL |
 |-------|-----|
-| UI    | `https://demo.realworld.show` |
-| API   | `https://api.realworld.show` |
+| UI    | `http://localhost:5173` |
+| API   | `http://localhost:3001` |
 
-Conduit is a blogging platform that follows the [RealWorld](https://github.com/gothinkster/realworld) specification. Because it is a **public demo**, its database is periodically reset. Tests cannot rely on pre-existing users, articles, or comments — every run must establish its own preconditions. This constraint is a core driver behind the fixture-based setup strategy described below.
+The SUT (System Under Test) lives in a separate repository: [node-react-real-world-example-app](https://github.com/Johnny-Fingers/node-react-real-world-example-app). To run the tests locally, clone and start both the backend and frontend from that repository first.
+
+The application follows the [RealWorld](https://github.com/gothinkster/realworld) specification. Tests cannot rely on pre-existing users, articles, or comments — every run must establish its own preconditions. This constraint is a core driver behind the fixture-based setup strategy described below.
 
 ---
 
@@ -68,7 +70,7 @@ Three fixtures are defined in `fixtures/auth.fixture.ts`:
 | `authenticatedRequest` | Registers a user, obtains a JWT, and provides an `APIRequestContext` pre-configured with the `Authorization` header. |
 | `authenticatedPage` | Registers a user, injects the JWT into `localStorage`, and provides a browser `Page` ready for authenticated UI flows. |
 
-**Why this matters:** Because Conduit resets its database, hard-coded credentials would fail unpredictably. Fixtures register a fresh, unique user (using `Date.now()` for uniqueness) before each test that needs one, making tests self-contained and repeatable regardless of external database state.
+**Why this matters:** Because the database is ephemeral, hard-coded credentials would fail unpredictably. Fixtures register a fresh, unique user (using `Date.now()` for uniqueness) before each test that needs one, making tests self-contained and repeatable regardless of external database state.
 
 ### 2. Page Object Model (UI Tests)
 
@@ -91,7 +93,7 @@ API interactions follow a lightweight Model–Controller separation:
 
 ### 4. Authentication via `localStorage`
 
-The Conduit frontend stores the JWT in `localStorage` under the key `jwtToken`. For UI tests that require an authenticated session, the `authenticatedPage` fixture:
+The frontend stores the JWT in `localStorage` under the key `token`. For UI tests that require an authenticated session, the `authenticatedPage` fixture:
 
 1. Registers a user through the API.
 2. Extracts the token from the response.
@@ -180,7 +182,7 @@ playwright-hybrid-automation-framework/
 | [Playwright](https://playwright.dev/) | 1.61.1 |
 | [Docker](https://www.docker.com/) *(optional)* | For containerized execution |
 
-An active internet connection is required — tests hit the public Conduit demo endpoints.
+The local backend and frontend must be running before executing the tests.
 
 ---
 
@@ -284,7 +286,7 @@ Traces, screenshots, and videos are captured **only on failure** to keep artifac
 Key settings from `playwright.config.ts`:
 
 - **Parallel execution** enabled (`fullyParallel: true`) for faster feedback.
-- **Separate base URLs** per project — API tests target `api.realworld.show`, UI tests target `demo.realworld.show`.
+- **Separate base URLs** per project — API tests target `localhost:3001`, UI tests target `localhost:5173`.
 - **CI safeguards** — `forbidOnly` prevents accidental `.only` commits; retries and worker limits protect the CI agent.
 - **Failure artifacts** — `trace: retain-on-failure`, `screenshot: only-on-failure`, `video: on-first-retry`.
 
